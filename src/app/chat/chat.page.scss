@@ -1,0 +1,34 @@
+.message {
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 4px;
+  white-space: pre-wrap;
+}
+
+.my-message {
+  background: lightblue;
+  color: #fff;
+}
+
+.other-message {
+  background: palevioletred;
+  color: #fff;
+}
+
+.createdAt {
+  color: #dfdfdf;
+  float: right;
+  font-size: small;
+}
+
+.inputBox {
+  margin-top: 0px;
+  border: 1px solid gray;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.sendBtn {
+  --padding-start: 0.5em;
+  --padding-end: 0.5em;
+}

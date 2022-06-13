@@ -1,0 +1,37 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+  <!--  <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>-->
+
+    <ion-title>
+     Enter Room
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-grid>
+    <ion-row>
+      <h3>
+        Enter Snowrunner Room
+      </h3>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-input type="text" [(ngModel)]="nickName" placeholder="Enter your name"></ion-input>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <ion-input type="text" [(ngModel)]="roomCode" placeholder="Enter Snowrunner Invite Code"></ion-input>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-button (click)="enterChatRoom()" class="margin">
+        Go to Chat Room
+      </ion-button>
+    </ion-row>
+  </ion-grid>
+
+</ion-content>
