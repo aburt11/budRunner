@@ -11,7 +11,7 @@
   <ion-grid>
     <ion-row *ngFor="let message of messages">
 
-      <ion-col size="9" *ngIf="message.user !== currentUser" class="message other-message">
+      <ion-col size="9" *ngIf="message.user !== currentUser" class="message other-message" [style.background-color]="this.getUserColourFromIndex(message.user)">
         <b>{{ message.user }}</b><br>
         <span>{{ message.msg }}</span>
         <div class="createdAt" text-right><br>{{ message.createdAt | date:'short' }}</div>

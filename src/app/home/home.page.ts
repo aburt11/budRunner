@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { ChatManagerService } from '../services/chat-manager.service';
 
 @Component({
   selector: 'app-home',
@@ -12,13 +14,18 @@ export class HomePage implements OnInit {
 
   roomCode;
 
-  constructor() { }
+  constructor(private chatMan: ChatManagerService, private route: Router) { }
 
   ngOnInit() {
   }
 
 
   enterChatRoom(){
+
+    this.chatMan.setUserName(this.nickName);
+    this.chatMan.setRoomCode(this.roomCode);
+
+    this.route.navigateByUrl('/chat');
 
   }
 

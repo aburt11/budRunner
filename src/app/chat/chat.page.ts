@@ -14,26 +14,53 @@ export class ChatPage implements OnInit {
 
 messages = [];
 
+currentUsers = [];
+
 currentUser;
 
 currentMessage = '';
+
+currentRoom = '';
+
+chatColours= ['#293462','#F24C4C','#EC9B3B','#F7D716'];
 
 
   constructor(private socket: Socket, private chatMan: ChatManagerService, private toast: ToastController) { }
 
   ngOnInit() {
     this.socket.connect();
-    this.socket.emit('setUserName', this.chatMan.getUserName());
-    this.socket.emit('setRoomCode', this.chatMan.getRoomCode());
+    this.socket.emit('setUserAuth', {name:this.chatMan.getUserName(),room:this.chatMan.getRoomCode()});
+    this.currentRoom = this.chatMan.getRoomCode();
     this.setUserActivityEvent();
 
-    this.socket.fromEvent('message').subscribe(message => {
+    this.socket.fromEvent('message').subscribe((message: any) => {
       this.messages.push(message);
+      if(this.currentUsers.indexOf(message.user) === -1){
+
+        this.currentUsers.push(message.user);
+
+      }
     });
   }
 
+  getUserColourFromIndex(userName){
+
+    const userIndex = this.currentUsers.indexOf(userName);
+
+    if(userIndex <= this.chatColours.length){
+
+      return this.chatColours[userIndex];
+
+    } else{
+      const randNum = Math.floor(Math.random() * this.chatColours.length);
+
+      return this.chatColours[randNum];
+    }
+
+  }
+
   setUserActivityEvent() {
-    this.socket.fromEvent('room_'+this.chatMan.getRoomCode()).subscribe((data: any) => {
+    this.socket.fromEvent('activity'+this.chatMan.getRoomCode()).subscribe((data: any) => {
       if (data.event === 'chatLeft') {
         this.showToast(data.user + ' Left the Chat Room');
       } else {
@@ -41,8 +68,10 @@ currentMessage = '';
       }
     });
   }
+
+
   sendMessage() {
-    this.socket.emit('room_msg_'+this.chatMan.getRoomCode(), { text: this.currentMessage });
+    this.socket.emit('sendMessage', {room:this.currentRoom, text: this.currentMessage });
     this.currentMessage = '';
   }
 
