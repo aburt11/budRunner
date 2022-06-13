@@ -1,9 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+/* eslint-disable max-len */
+/* eslint-disable no-var */
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 
 import { Socket } from 'ngx-socket-io';
 
 import {ChatManagerService} from '../services/chat-manager.service';
 import { ToastController } from '@ionic/angular';
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-chat',
@@ -26,9 +29,12 @@ isMuted = true;
 
 constraints = { audio: true };
 
-chunks: any[];
+chunks;
 
 mediaRecorder;
+
+// eslint-disable-next-line @typescript-eslint/member-ordering
+@ViewChild('audioChat') audioElem: ElementRef;
 
 ///audioContext;
 
@@ -38,7 +44,7 @@ mediaRecorder;
 chatColours= ['#293462','#F24C4C','#EC9B3B','#F7D716'];
 
 
-  constructor(private socket: Socket, private chatMan: ChatManagerService, private toast: ToastController) {
+  constructor(private socket: Socket, private chatMan: ChatManagerService, private toast: ToastController, private domSanitizer: DomSanitizer) {
 
  //   this.audioContext = new AudioContext();
    }
@@ -48,34 +54,36 @@ chatColours= ['#293462','#F24C4C','#EC9B3B','#F7D716'];
 navigator.mediaDevices.getUserMedia(this.constraints).then(mediaStream => {
     // eslint-disable-next-line no-var
     this.mediaRecorder = new MediaRecorder(mediaStream);
-    this.mediaRecorder.onstart((_ev: any) => {
+    this.mediaRecorder.onstart = function() {
         this.chunks = [];
-    });
-    this.mediaRecorder.ondataavailable((e)=> {
+    };
+    this.mediaRecorder.ondataavailable =  function(e)  {
+      console.log("DATA SENT",e, this.chunks);
         this.chunks.push(e.data);
-    });
-    this.mediaRecorder.onstop(e =>{
-        const blob = new Blob(this.chunks, { type : 'audio/ogg; codecs=opus' });
-        this.socket.emit('radio', blob);
-    });
+    };
+    this.mediaRecorder.onstop = this.sendBlob();
 
-    // Start recording
+});
+
+
+  }
+
+  startRecording(){
     this.mediaRecorder.start();
+  }
 
-    // Stop recording after 5 seconds and broadcast it to server
-    setTimeout(()=> {
-      console.log('VOICE REC STOPPED');
-        this.mediaRecorder.stop();
-    }, 5000);
-});
+  stopRecording(){
+    this.mediaRecorder.stop();
+  }
 
-// When the client receives a voice message it will play the sound
-this.socket.fromEvent('voice').subscribe((arrayBuffer: BlobPart)=> {
-    const blob = new Blob([arrayBuffer], { type : 'audio/ogg; codecs=opus' });
-    const audio = document.createElement('audio');
-    audio.src = window.URL.createObjectURL(blob);
-    audio.play();
-});
+
+  sendBlob(){
+    console.log("CHUNKS IN SENDBLOB FN",this.chunks);
+      var blob = new Blob(this.chunks, { type : 'audio/webm;codecs=opus' });
+
+      console.log('PACKET TO SEND',this.chunks);
+
+      this.socket.emit('radio', {room:this.currentRoom,payload: blob});
   }
 
 
@@ -93,6 +101,17 @@ this.socket.fromEvent('voice').subscribe((arrayBuffer: BlobPart)=> {
 
       }
     });
+
+    this.initVoiceChat();
+
+    // When the client receives a voice message it will play the sound
+this.socket.fromEvent('voice').subscribe((data: any)=> {
+  const blob = new Blob([data.payload], { type : 'audio/webm;codecs=opus' });
+
+  this.audioElem.nativeElement.src = this.domSanitizer.bypassSecurityTrustResourceUrl(window.URL.createObjectURL(blob));
+  this.audioElem.nativeElement.play();
+});
+
   }
 
   getUserColourFromIndex(userName: any){

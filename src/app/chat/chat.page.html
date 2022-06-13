@@ -7,7 +7,8 @@
 </ion-header>
 
 <ion-content>
-
+<audio #audioChat id="
+audioChat"></audio>
   <ion-grid>
     <ion-row *ngFor="let message of messages">
 
@@ -30,6 +31,14 @@
 
 <ion-footer>
   <ion-toolbar color="light">
+    <ion-row align-items-center>
+      <ion-col size="12">
+        <ion-buttons>
+          <ion-button slot="start" (click)="startRecording()">Start</ion-button>
+          <ion-button slot="end" (click)="stopRecording()">Stop</ion-button>
+        </ion-buttons>
+      </ion-col>
+    </ion-row>
     <ion-row align-items-center>
       <ion-col size="10">
         <ion-textarea (keyup.enter)="sendMessage()" placeholder="Write your message here.." auto-grow class="inputBox" rows="1" [(ngModel)]="currentMessage"></ion-textarea>
