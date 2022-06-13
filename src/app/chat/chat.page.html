@@ -32,7 +32,7 @@
   <ion-toolbar color="light">
     <ion-row align-items-center>
       <ion-col size="10">
-        <ion-textarea placeholder="Write your message here.." auto-grow class="inputBox" rows="1" [(ngModel)]="currentMessage"></ion-textarea>
+        <ion-textarea (keyup.enter)="sendMessage()" placeholder="Write your message here.." auto-grow class="inputBox" rows="1" [(ngModel)]="currentMessage"></ion-textarea>
       </ion-col>
       <ion-col size="2">
         <ion-button expand="block" fill="clear" color="primary" [disabled]="currentMessage === ''" class="sendBtn"

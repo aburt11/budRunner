@@ -16,16 +16,68 @@ messages = [];
 
 currentUsers = [];
 
-currentUser;
+currentUser: any;
 
 currentMessage = '';
 
 currentRoom = '';
 
+isMuted = true;
+
+constraints = { audio: true };
+
+chunks: any[];
+
+mediaRecorder;
+
+///audioContext;
+
+// playbackBuffers = {};
+// audioWorkletNodes = {};
+
 chatColours= ['#293462','#F24C4C','#EC9B3B','#F7D716'];
 
 
-  constructor(private socket: Socket, private chatMan: ChatManagerService, private toast: ToastController) { }
+  constructor(private socket: Socket, private chatMan: ChatManagerService, private toast: ToastController) {
+
+ //   this.audioContext = new AudioContext();
+   }
+
+  initVoiceChat(){
+    console.log('VOICE REC INIT');
+navigator.mediaDevices.getUserMedia(this.constraints).then(mediaStream => {
+    // eslint-disable-next-line no-var
+    this.mediaRecorder = new MediaRecorder(mediaStream);
+    this.mediaRecorder.onstart((_ev: any) => {
+        this.chunks = [];
+    });
+    this.mediaRecorder.ondataavailable((e)=> {
+        this.chunks.push(e.data);
+    });
+    this.mediaRecorder.onstop(e =>{
+        const blob = new Blob(this.chunks, { type : 'audio/ogg; codecs=opus' });
+        this.socket.emit('radio', blob);
+    });
+
+    // Start recording
+    this.mediaRecorder.start();
+
+    // Stop recording after 5 seconds and broadcast it to server
+    setTimeout(()=> {
+      console.log('VOICE REC STOPPED');
+        this.mediaRecorder.stop();
+    }, 5000);
+});
+
+// When the client receives a voice message it will play the sound
+this.socket.fromEvent('voice').subscribe((arrayBuffer: BlobPart)=> {
+    const blob = new Blob([arrayBuffer], { type : 'audio/ogg; codecs=opus' });
+    const audio = document.createElement('audio');
+    audio.src = window.URL.createObjectURL(blob);
+    audio.play();
+});
+  }
+
 
   ngOnInit() {
     this.socket.connect();
@@ -43,7 +95,7 @@ chatColours= ['#293462','#F24C4C','#EC9B3B','#F7D716'];
     });
   }
 
-  getUserColourFromIndex(userName){
+  getUserColourFromIndex(userName: any){
 
     const userIndex = this.currentUsers.indexOf(userName);
 
@@ -71,8 +123,10 @@ chatColours= ['#293462','#F24C4C','#EC9B3B','#F7D716'];
 
 
   sendMessage() {
+    if(this.currentMessage.length > 0){
     this.socket.emit('sendMessage', {room:this.currentRoom, text: this.currentMessage });
     this.currentMessage = '';
+    }
   }
 
   ionViewWillLeave() {
